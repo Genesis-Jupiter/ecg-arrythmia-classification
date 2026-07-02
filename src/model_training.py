@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import (Input, Conv1D, MaxPooling1D,
                                      BatchNormalization, Bidirectional,
                                      LSTM, Dense, Dropout, GlobalAveragePooling1D, 
-                                     Reshape, Multiply, Add)
+                                     Reshape, Multiply, Add, Activation)
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.utils.class_weight import compute_class_weight
@@ -15,7 +15,7 @@ from logger import get_logger
 # Initialize logger
 logger = get_logger(__name__)
 
-# Hardcoded Parameters (we will move these to params.yaml in the next phase)
+# Hardcoded Parameters
 BEAT_LEN = 375
 EPOCHS = 10
 BATCH_SIZE = 250
@@ -40,7 +40,10 @@ def residual_block(x, filters):
     
     shortcut = Conv1D(filters, 1, padding='same')(shortcut)
     x = Add()([x, shortcut])
-    x = tf.keras.activations.relu(x)
+    
+    # Updated: Using Keras layer instead of raw TF math operation
+    x = Activation('relu')(x)
+    
     return x
 
 def build_model(input_shape, num_classes):
@@ -111,9 +114,9 @@ def train_model(data_path, model_dir):
             verbose=1
         )
         
-        # Save the model
+        # Save the model - Updated to .h5 format
         os.makedirs(model_dir, exist_ok=True)
-        model_save_path = os.path.join(model_dir, "ecg_model.keras")
+        model_save_path = os.path.join(model_dir, "ecg_model.h5")
         model.save(model_save_path)
         logger.info(f"Model training completed! Saved to {model_save_path}")
 
